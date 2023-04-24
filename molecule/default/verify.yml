@@ -1,0 +1,21 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Verify apache is serving web requests.
+      uri:
+        url: http://localhost
+        status_code: 200
+
+    - name: Verify web page content.
+      uri:
+        url: http://localhost
+        return_content: true
+      register: this
+      failed_when: "'Futurama 2023!' not in this.content"
+
+    - name: Display web page content.
+      debug: var=this.content

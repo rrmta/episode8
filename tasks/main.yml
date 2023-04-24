@@ -1,0 +1,39 @@
+---
+- name: Load variable files.
+  include_vars: '{{item}}'
+  with_first_found:
+    - 'vars/apache_{{ ansible_os_family }}.yml'
+    - 'vars/apache_default.yml'
+
+- name: Print debug message.
+  ansible.builtin.debug:
+    msg: Planet Express!
+
+- name: Update cache.
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Install apache.
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{apache_package}}"
+    - curl
+
+- name: Copy a web page.
+  copy:
+    content: |
+      <html>
+        <head><title>Planet Express</title></head>
+        <body>Futurama 2023!</body>
+      </html>
+    dest: '/var/www/html/index.html'
+  notify: restart-apache
+
+- name: Start and enable apache.
+  ansible.builtin.service:
+    name: "{{apache_service}}"
+    state: started
+    enabled: true
